@@ -2,6 +2,9 @@ package com.example.UserApi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,29 +12,32 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
+
 import org.json.HTTP;
 
 @RestController
 @SpringBootApplication
 public class UserApiApplication {
 
-	//public static final String serverUrl = "http://localhost:9090";
-	public static final String serverUrl = "https://9090-dot-11253447-dot-devshell.appspot.com";
+	public static final String serverUrl = "http://localhost:9090";
+	//public static final String serverUrl = "https://9090-dot-11253447-dot-devshell.appspot.com";
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserApiApplication.class, args);
 	}
 	
-	public static String RequestProcessedData(String url){
+	public static ResponseEntity<String> RequestProcessedData(String url){
 		RestTemplate request = new RestTemplate();
-		
+	
 		String resultObject = request.getForObject(url, String.class);
 		ResponseEntity<String> resultEntity = request.getForEntity(url, String.class);
 		
 		System.out.println("resultObject "+ url + " : " + resultObject);
 		System.out.println("resultEntity "+ url + " : " + resultEntity.toString());
 
-		return (resultObject);
+		return (resultEntity);
 	}
 	
 	@GetMapping("/")
@@ -43,14 +49,14 @@ public class UserApiApplication {
 	public static String CodetoState(@RequestParam("code") String code) {
 		String state = null;
 		try {
-			String response = RequestProcessedData(serverUrl+"/readDataForCode");		
-			System.out.println("response : "+response);
+			ResponseEntity<String> response = RequestProcessedData(serverUrl+"/readDataForCode");		
+			System.out.println("response body : "+response.getBody());
+			System.out.println("response code : "+response.getStatusCodeValue());
+			System.out.println("response header : "+response.getHeaders());
 			
-			JSONObject jsonObject = new JSONObject(response);		
-			System.out.println("jsonObject : "+jsonObject);
+			JSONObject jsonObject = new JSONObject(response.getBody());		
 			
-			state = jsonObject.getString(code.toUpperCase());			
-			System.out.println("codeToState " + code + " : " + state);
+			state = jsonObject.getString(code);
 			
 		} catch (Exception e) {
 			System.out.println("[ERROR] : [CUSTOM_LOG] : "+e);
@@ -65,16 +71,19 @@ public class UserApiApplication {
 	public static String StateToCode(@RequestParam("state") String state){
 		String value = "";
 		try {
-			String response = RequestProcessedData(serverUrl+"/readDataForState");
-			System.out.println("response : " + response);
+			ResponseEntity<String> response = RequestProcessedData(serverUrl+"/readDataForState");
 			
-			JSONArray jsonArray = new JSONArray(response);
+			System.out.println("response body : "+response.getBody());
+			System.out.println("response code : "+response.getStatusCodeValue());
+			System.out.println("response header : "+response.getHeaders());
+			
+			JSONArray jsonArray = new JSONArray(response.getBody());
+			
 			for (int n = 0; n < jsonArray.length(); n++) {
 				JSONObject object = jsonArray.getJSONObject(n);
 				System.out.println("jsonObject : " + object);
 				
 				String name = object.getString("name");
-				System.out.println("name : " + name);
 				
 				if(state.equalsIgnoreCase(name)) {
 					value = object.getString("abbreviation");
@@ -89,7 +98,6 @@ public class UserApiApplication {
 		if (value == null) {
 			value = "No match found";
 		}
-		System.out.println("stateToCode " + state + " : " + value);
 		return value;
 	}
 
