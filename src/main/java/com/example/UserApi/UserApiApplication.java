@@ -21,23 +21,23 @@ import org.json.HTTP;
 @SpringBootApplication
 public class UserApiApplication {
 
-	public static final String serverUrl = "http://localhost:9090";
-	//public static final String serverUrl = "https://9090-dot-11253447-dot-devshell.appspot.com";
+	//public static final String serverUrl = "http://localhost:9090";
+	public static final String serverUrl = "https://9090-dot-11253447-dot-devshell.appspot.com";
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserApiApplication.class, args);
 	}
 	
-	public static ResponseEntity<String> RequestProcessedData(String url){
+	public static JSONObject RequestProcessedData(String url){
 		RestTemplate request = new RestTemplate();
 	
-		String resultObject = request.getForObject(url, String.class);
-		ResponseEntity<String> resultEntity = request.getForEntity(url, String.class);
 		
-		System.out.println("resultObject "+ url + " : " + resultObject);
-		System.out.println("resultEntity "+ url + " : " + resultEntity.toString());
+		ResponseEntity<String> resultEntity = request.getForEntity(url, String.class);
+		JSONObject json = new JSONObject(resultEntity.getBody());
+		System.out.println("resultObject "+ url + " : " + json);
+		System.out.println("resultEntity "+ url + " : " + json.toString());
 
-		return (resultEntity);
+		return (json);
 	}
 	
 	@GetMapping("/")
@@ -49,13 +49,7 @@ public class UserApiApplication {
 	public static String CodetoState(@RequestParam("code") String code) {
 		String state = null;
 		try {
-			ResponseEntity<String> response = RequestProcessedData(serverUrl+"/readDataForCode");		
-			System.out.println("response body : "+response.getBody());
-			System.out.println("response code : "+response.getStatusCodeValue());
-			System.out.println("response header : "+response.getHeaders());
-			
-			JSONObject jsonObject = new JSONObject(response.getBody());		
-			
+			JSONObject jsonObject = RequestProcessedData(serverUrl+"/readDataForCode");		
 			state = jsonObject.getString(code);
 			
 		} catch (Exception e) {
@@ -71,13 +65,9 @@ public class UserApiApplication {
 	public static String StateToCode(@RequestParam("state") String state){
 		String value = "";
 		try {
-			ResponseEntity<String> response = RequestProcessedData(serverUrl+"/readDataForState");
+			JSONObject response = RequestProcessedData(serverUrl+"/readDataForState");
 			
-			System.out.println("response body : "+response.getBody());
-			System.out.println("response code : "+response.getStatusCodeValue());
-			System.out.println("response header : "+response.getHeaders());
-			
-			JSONArray jsonArray = new JSONArray(response.getBody());
+			JSONArray jsonArray = new JSONArray(response);
 			
 			for (int n = 0; n < jsonArray.length(); n++) {
 				JSONObject object = jsonArray.getJSONObject(n);
