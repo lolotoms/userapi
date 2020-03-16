@@ -13,8 +13,9 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class UserApiApplication {
 
-	public static final String serverUrl = "http://localhost:9090";
-	
+	//public static final String serverUrl = "http://localhost:9090";
+	public static final String serverUrl = "https://9090-dot-11253447-dot-devshell.appspot.com";
+
 	public static void main(String[] args) {
 		SpringApplication.run(UserApiApplication.class, args);
 	}
